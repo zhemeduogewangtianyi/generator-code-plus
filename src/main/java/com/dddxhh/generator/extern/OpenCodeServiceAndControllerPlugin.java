@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.dddxhh.generator.context.GeneratorContext;
 import com.dddxhh.generator.tpl.*;
+import org.apache.commons.lang3.ArrayUtils;
 import org.mybatis.generator.api.GeneratedJavaFile;
 import org.mybatis.generator.api.IntrospectedTable;
 import org.mybatis.generator.api.PluginAdapter;
@@ -35,12 +36,20 @@ public class OpenCodeServiceAndControllerPlugin extends PluginAdapter {
         GeneratedJavaFile gjf4 = new ViewObjectTemplate(this.generatorContext,super.context,introspectedTable).generateViewObject();
         GeneratedJavaFile gjf5 = new ParamObjectTemplate(this.generatorContext,super.context,introspectedTable).generateParamObject();
 
-        answer.add(gjf);
-        answer.add(gjf2);
-        answer.add(gjf3);
-        answer.add(gjf4);
-        answer.add(gjf5);
+        addAnswer(answer,gjf,gjf2,gjf3,gjf4,gjf5);
+
         return answer;
+    }
+
+    private void addAnswer(List<GeneratedJavaFile> answer,GeneratedJavaFile... generatedJavaFiles){
+        if(ArrayUtils.isEmpty(generatedJavaFiles)){
+            return;
+        }
+        for(GeneratedJavaFile generatedJavaFile : generatedJavaFiles){
+            if(generatedJavaFile != null){
+                answer.add(generatedJavaFile);
+            }
+        }
     }
 
 }

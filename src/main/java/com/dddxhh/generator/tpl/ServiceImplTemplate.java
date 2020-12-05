@@ -1,6 +1,7 @@
 package com.dddxhh.generator.tpl;
 
 import com.dddxhh.generator.context.GeneratorContext;
+import org.apache.commons.lang3.StringUtils;
 import org.mybatis.generator.api.GeneratedJavaFile;
 import org.mybatis.generator.api.IntrospectedColumn;
 import org.mybatis.generator.api.IntrospectedTable;
@@ -8,8 +9,7 @@ import org.mybatis.generator.api.dom.java.*;
 import org.mybatis.generator.config.Context;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.*;
 
 public class ServiceImplTemplate extends BaseTemplate {
 
@@ -20,6 +20,10 @@ public class ServiceImplTemplate extends BaseTemplate {
 
     //生成 serviceImpl 类
     public GeneratedJavaFile generateServiceImpl() {
+
+        if(StringUtils.isEmpty(super.serviceFullName) || StringUtils.isEmpty(super.serviceName) || StringUtils.isEmpty(serviceImplFullName)|| StringUtils.isEmpty(serviceImplName)){
+            return null;
+        }
 
         FullyQualifiedJavaType service = new FullyQualifiedJavaType(this.serviceFullName);
 
@@ -33,17 +37,23 @@ public class ServiceImplTemplate extends BaseTemplate {
 
         clazz.addAnnotation("@Service");
 
-        clazz.addImportedTypes(new HashSet<>(Arrays.asList(
+        List<FullyQualifiedJavaType> imported = new ArrayList<>();
+        if(StringUtils.isNotBlank(super.voFullName)){
+            imported.add(new FullyQualifiedJavaType(super.voFullName));
+        }
+        if(StringUtils.isNotBlank(super.paramFullName)){
+            imported.add(new FullyQualifiedJavaType(super.paramFullName));
+        }
+        Collections.addAll(imported,
                 new FullyQualifiedJavaType(super.doFullName),
-                new FullyQualifiedJavaType(super.voFullName),
-                new FullyQualifiedJavaType(super.paramFullName),
                 new FullyQualifiedJavaType(super.mapperFullName),
                 new FullyQualifiedJavaType(super.serviceFullName),
                 new FullyQualifiedJavaType("org.springframework.stereotype.Service"),
                 new FullyQualifiedJavaType("javax.annotation.Resource"),
                 new FullyQualifiedJavaType("com.alibaba.fastjson.JSON"),
                 new FullyQualifiedJavaType("com.alibaba.fastjson.JSONObject")
-        )));
+                );
+        clazz.addImportedTypes(new HashSet<>(imported));
 
         String mapperServiceName = firstCharToLowCase(super.mapperName);
 
@@ -68,7 +78,12 @@ public class ServiceImplTemplate extends BaseTemplate {
 
         method.addAnnotation("@Override");
 
-        Parameter parameter = new Parameter(new FullyQualifiedJavaType(super.paramName),"param");
+        Parameter parameter;
+        if(StringUtils.isEmpty(super.paramName)){
+            parameter = new Parameter(new FullyQualifiedJavaType(super.doName),"param");
+        }else{
+            parameter = new Parameter(new FullyQualifiedJavaType(super.paramName),"param");
+        }
         method.addParameter(parameter);
 
         method.addBodyLine(super.doName + " " + firstCharToLowCase(super.doName) + " = JSONObject.parseObject(JSON.toJSONString(param),"+ super.doName +".class);");
@@ -108,7 +123,12 @@ public class ServiceImplTemplate extends BaseTemplate {
 
         method.addAnnotation("@Override");
 
-        Parameter parameter = new Parameter(new FullyQualifiedJavaType(super.paramName),"param");
+        Parameter parameter;
+        if(StringUtils.isEmpty(super.paramName)){
+            parameter = new Parameter(new FullyQualifiedJavaType(super.doName),"param");
+        }else{
+            parameter = new Parameter(new FullyQualifiedJavaType(super.paramName),"param");
+        }
         method.addParameter(parameter);
 
         method.addBodyLine(super.doName + " " + firstCharToLowCase(super.doName) + " = JSONObject.parseObject(JSON.toJSONString(param),"+ super.doName +".class);");
@@ -131,8 +151,14 @@ public class ServiceImplTemplate extends BaseTemplate {
         method.addParameter(parameter);
 
         method.addBodyLine(super.doName + " " + firstCharToLowCase(super.doName) + " = " + mapperServiceName + ".selectByPrimaryKey(id);");
-        method.addBodyLine("return JSONObject.parseObject(JSON.toJSONString(" + firstCharToLowCase(super.doName) + "),"+ super.voName +".class);");
-        method.setReturnType(new FullyQualifiedJavaType(super.voName));
+        if(StringUtils.isEmpty(super.voName)){
+            method.addBodyLine("return " + firstCharToLowCase(super.doName) + ";");
+            method.setReturnType(new FullyQualifiedJavaType(super.doName));
+        }else{
+            method.addBodyLine("return JSONObject.parseObject(JSON.toJSONString(" + firstCharToLowCase(super.doName) + "),"+ super.voName +".class);");
+            method.setReturnType(new FullyQualifiedJavaType(super.voName));
+        }
+
         method.setVisibility(JavaVisibility.PUBLIC);
 
         clazz.addMethod(method);

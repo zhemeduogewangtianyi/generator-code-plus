@@ -1,6 +1,7 @@
 package com.dddxhh.generator.tpl;
 
 import com.dddxhh.generator.context.GeneratorContext;
+import org.apache.commons.lang3.StringUtils;
 import org.mybatis.generator.api.GeneratedJavaFile;
 import org.mybatis.generator.api.IntrospectedTable;
 import org.mybatis.generator.api.dom.java.FullyQualifiedJavaType;
@@ -20,6 +21,10 @@ public class ViewObjectTemplate extends BaseTemplate {
     }
 
     public GeneratedJavaFile generateViewObject() {
+
+        if(StringUtils.isEmpty(super.voFullName) || StringUtils.isEmpty(super.voName)){
+            return null;
+        }
 
         FullyQualifiedJavaType vo = new FullyQualifiedJavaType(this.voFullName);
 
