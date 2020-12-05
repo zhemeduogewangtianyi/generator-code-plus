@@ -4,6 +4,9 @@ package com.dddxhh;
 import com.dddxhh.generator.context.GeneratorContext;
 import com.dddxhh.generator.util.GeneratorUtils;
 
+/**
+ * 入口
+ * */
 public class Main {
 
     public static void main(String[] args) {
