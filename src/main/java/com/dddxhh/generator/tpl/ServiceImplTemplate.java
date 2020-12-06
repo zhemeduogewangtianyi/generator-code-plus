@@ -1,6 +1,7 @@
 package com.dddxhh.generator.tpl;
 
 import com.dddxhh.generator.context.GeneratorContext;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.mybatis.generator.api.GeneratedJavaFile;
 import org.mybatis.generator.api.IntrospectedColumn;
@@ -92,7 +93,14 @@ public class ServiceImplTemplate extends BaseTemplate {
         String javaProperty = introspectedColumn.getJavaProperty();
         method.addBodyLine("return " + firstCharToLowCase(super.doName) + ".get" + super.firstCharToUpperCase(javaProperty) + "();");
 
-        method.setReturnType(new FullyQualifiedJavaType("java.lang.Long"));
+        List<IntrospectedColumn> primaryKeyColumns = introspectedTable.getPrimaryKeyColumns();
+        if(CollectionUtils.isEmpty(primaryKeyColumns)){
+            FullyQualifiedJavaType returnType = new FullyQualifiedJavaType("java.lang.Object");
+            method.setReturnType(returnType);
+        }else{
+            FullyQualifiedJavaType returnType = primaryKeyColumns.get(0).getFullyQualifiedJavaType();
+            method.setReturnType(returnType);
+        }
 
         method.setVisibility(JavaVisibility.PUBLIC);
 
@@ -105,7 +113,9 @@ public class ServiceImplTemplate extends BaseTemplate {
         Method method = new Method("delete");
 
         method.addAnnotation("@Override");
-        Parameter parameter = new Parameter(new FullyQualifiedJavaType("java.lang.Long"),"id");
+        List<IntrospectedColumn> primaryKeyColumns = introspectedTable.getPrimaryKeyColumns();
+        FullyQualifiedJavaType paramType = primaryKeyColumns.get(0).getFullyQualifiedJavaType();
+        Parameter parameter = new Parameter(paramType,"id");
         method.addParameter(parameter);
 
         method.addBodyLine("return " + mapperServiceName + ".deleteByPrimaryKey(id);");
@@ -147,7 +157,9 @@ public class ServiceImplTemplate extends BaseTemplate {
         Method method = new Method("queryById");
 
         method.addAnnotation("@Override");
-        Parameter parameter = new Parameter(new FullyQualifiedJavaType("java.lang.Long"),"id");
+        List<IntrospectedColumn> primaryKeyColumns = introspectedTable.getPrimaryKeyColumns();
+        FullyQualifiedJavaType paramType = primaryKeyColumns.get(0).getFullyQualifiedJavaType();
+        Parameter parameter = new Parameter(paramType,"id");
         method.addParameter(parameter);
 
         method.addBodyLine(super.doName + " " + firstCharToLowCase(super.doName) + " = " + mapperServiceName + ".selectByPrimaryKey(id);");

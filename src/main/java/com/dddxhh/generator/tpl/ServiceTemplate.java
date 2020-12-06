@@ -1,8 +1,10 @@
 package com.dddxhh.generator.tpl;
 
 import com.dddxhh.generator.context.GeneratorContext;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.mybatis.generator.api.GeneratedJavaFile;
+import org.mybatis.generator.api.IntrospectedColumn;
 import org.mybatis.generator.api.IntrospectedTable;
 import org.mybatis.generator.api.dom.java.*;
 import org.mybatis.generator.config.Context;
@@ -49,7 +51,7 @@ public class ServiceTemplate extends BaseTemplate{
 
         serviceInterface.addImportedTypes(new HashSet<>(imported));
 
-        save(serviceInterface);
+        save(serviceInterface,super.introspectedTable);
         delete(serviceInterface);
         update(serviceInterface);
         queryById(serviceInterface);
@@ -59,7 +61,7 @@ public class ServiceTemplate extends BaseTemplate{
         return new GeneratedJavaFile(serviceInterface,"src"+ File.separator +"main" + File.separator + "java",context.getJavaFormatter());
     }
 
-    private void save(Interface serviceInterface) {
+    private void save(Interface serviceInterface,IntrospectedTable introspectedTable) {
 
         Method method = new Method("save");
 
@@ -73,7 +75,14 @@ public class ServiceTemplate extends BaseTemplate{
         }
         method.addParameter(parameter);
 
-        method.setReturnType(new FullyQualifiedJavaType("java.lang.Long"));
+        List<IntrospectedColumn> primaryKeyColumns = introspectedTable.getPrimaryKeyColumns();
+        if(CollectionUtils.isEmpty(primaryKeyColumns)){
+            FullyQualifiedJavaType returnType = new FullyQualifiedJavaType("java.lang.Object");
+            method.setReturnType(returnType);
+        }else{
+            FullyQualifiedJavaType returnType = primaryKeyColumns.get(0).getFullyQualifiedJavaType();
+            method.setReturnType(returnType);
+        }
 
         serviceInterface.addMethod(method);
         serviceInterface.setVisibility(JavaVisibility.DEFAULT);
@@ -85,7 +94,9 @@ public class ServiceTemplate extends BaseTemplate{
 
         addDoc("delete",method,true);
 
-        Parameter parameter = new Parameter(new FullyQualifiedJavaType("java.lang.Long"),"id");
+        List<IntrospectedColumn> primaryKeyColumns = introspectedTable.getPrimaryKeyColumns();
+        FullyQualifiedJavaType paramType = primaryKeyColumns.get(0).getFullyQualifiedJavaType();
+        Parameter parameter = new Parameter(paramType,"id");
         method.addParameter(parameter);
 
         method.setReturnType(new FullyQualifiedJavaType("java.lang.Integer"));
@@ -120,7 +131,9 @@ public class ServiceTemplate extends BaseTemplate{
 
         addDoc("queryById",method,true);
 
-        Parameter parameter = new Parameter(new FullyQualifiedJavaType("java.lang.Long"),"id");
+        List<IntrospectedColumn> primaryKeyColumns = introspectedTable.getPrimaryKeyColumns();
+        FullyQualifiedJavaType paramType = primaryKeyColumns.get(0).getFullyQualifiedJavaType();
+        Parameter parameter = new Parameter(paramType,"id");
         method.addParameter(parameter);
 
         if(StringUtils.isEmpty(super.voFullName)){

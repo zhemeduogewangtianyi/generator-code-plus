@@ -26,8 +26,8 @@ public class Main {
         gc.setAuthor("DDDXHH");
 
         //name settings
-        gc.setTableName("test");
-        gc.setEntityName("Test");
+        gc.setTableName("ttest");
+        gc.setEntityName("Ttest");
 
         //base mapper package path
         gc.setDoPackage("com.dddxhh.test.entity");
